@@ -1,5 +1,19 @@
 # TD-800
 
+### Настройка окружения
+
+```
+pip install matplotlib
+pip install pandas
+pip install -U scikit-learn
+pip install tensorflow
+```
+
+* * *
+
+### Запуск
+
+
 **raw_data_from_v8** - содержит данный из таблицы архива и рейсов  
 **initial_data** - содержит данные для обучения модели, эти данные готовятся из данных raw_data_from_v8  
 **test_data** - содержит тестовый набор данных(сырую телеметрию из архива) для применения прогнозов обученной моделью
