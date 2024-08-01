@@ -1,5 +1,5 @@
 from prepare_initial_data import prepare as prepare_data
-from predictive_models import lstm
+from predictive_models import lstm, conv1d, kalman_filter
 from show_graph import show
 import sys
 # sys.path.append('vars')
@@ -12,6 +12,8 @@ if __name__ == '__main__':
     if arg == '-build':
         prepare_data()  # готовим данные
         lstm.run()  # запускаем обучение и формирования прогноза
+        # kalman_filter.run()
+        # conv1d.run()
     elif arg == '-show':
         show()
     else:

@@ -25,9 +25,9 @@ def show():
     ax2 = ax1.twinx()
     ax3 = ax1.twinx()
 
-    ax1.plot(speed_x, speed_y, color='tab:blue')
-    ax2.plot(weight_x, weight_y, color='tab:red')
-    ax3.plot(state_x, state_y, color='yellow')
+    # ax1.plot(speed_x, speed_y, color='tab:blue')
+    # ax2.plot(weight_x, weight_y, color='tab:red')
+    ax3.plot(state_x, state_y, color='green')
 
     plt.xlabel('x - axis')
     plt.ylabel('y - axis')

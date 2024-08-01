@@ -1,27 +1,18 @@
-import json
 import pandas as pd
 import numpy as np
-from keras.src.utils import to_categorical
+import json
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import Conv1D, GlobalMaxPooling1D, Dense
+from keras.src.utils import to_categorical
 from vars import *
 
 
 def run():
+
     with open(INITIAIL_FILE_PATH, 'r', encoding='utf-8') as file:
         data = json.load(file)
-
-    # Пример данных с метками
-    # data = [
-    #     {"time": "2024-07-25 13:00:00+00", "speed": 0, "weight": 1, "event": 0},
-    #     {"time": "2024-07-25 13:05:00+00", "speed": 5, "weight": 10, "event": 1},  # Погрузка
-    #     {"time": "2024-07-25 13:10:00+00", "speed": 15, "weight": 10, "event": 0},
-    #     {"time": "2024-07-25 13:15:00+00", "speed": 0, "weight": 1, "event": 2},  # Разгрузка
-    #     {"time": "2024-07-25 13:20:00+00", "speed": 0, "weight": 1, "event": 0},
-    #     # Добавьте больше данных по мере необходимости
-    # ]
 
     df = pd.DataFrame(data)
     df['time'] = pd.to_datetime(df['time'])
@@ -44,7 +35,7 @@ def run():
     labels = to_categorical(labels)
 
     # Формирование последовательностей
-    def create_sequences(data, labels, seq_length=3):
+    def create_sequences(data, labels, seq_length=5):
         sequences = []
         labels_seq = []
         for i in range(len(data) - seq_length + 1):
@@ -60,9 +51,11 @@ def run():
     X_train = X
     y_train = y
 
-    # Создание модели LSTM
+    # Создание модели Conv1D
     model = Sequential()
-    model.add(LSTM(50, activation='relu', input_shape=(seq_length, X_train.shape[2])))
+    model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(seq_length, X_train.shape[2])))
+    model.add(GlobalMaxPooling1D())
+    model.add(Dense(50, activation='relu'))
     model.add(Dense(2, activation='softmax'))  # Три класса: нет события, погрузка, разгрузка
 
     # Компиляция модели
@@ -85,14 +78,7 @@ def run():
     new_features = new_df[['speed', 'weight', 'lon', 'lat', 'speed_diff', 'weight_diff', 'lon_diff', 'lat_diff']].values
     new_features = scaler.transform(new_features)
 
-
-    # X_new, _ = create_sequences(new_features, np.zeros((len(new_features), 3)), seq_length)
-    #
-    # # Предсказание событий на новых данных
-    # new_df['event'] = np.argmax(model.predict(X_new), axis=1)
-
-    # print(new_df)
-
+    # Убедитесь, что длины совпадают
     if len(new_features) >= seq_length:
         X_new, _ = create_sequences(new_features, np.zeros((len(new_features), 3)), seq_length)
         predictions = np.argmax(model.predict(X_new), axis=1)
@@ -101,6 +87,7 @@ def run():
         new_df = new_df.iloc[seq_length - 1:].copy()
         new_df['state'] = predictions
 
-
+    # Запись DataFrame в файл JSON
     new_df.to_json(FORECAST_FILE_PATH, orient='records', date_format='iso')
-    # print(new_df)
+
+    print(new_df)
